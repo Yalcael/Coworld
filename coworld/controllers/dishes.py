@@ -1,6 +1,6 @@
+from typing import Sequence
 from coworld.models.dishes import DishCreate, DishUpdate, Dish
 from coworld.models.errors import DishNotFoundError, DishAlreadyExistsError
-
 from uuid import UUID
 from sqlalchemy.exc import IntegrityError, NoResultFound
 from sqlmodel import Session, select
@@ -10,7 +10,7 @@ class DishController:
     def __init__(self, session: Session):
         self.session = session
 
-    async def get_dishes(self) -> list[Dish]:
+    async def get_dishes(self) -> Sequence[Dish]:
         return self.session.exec(select(Dish)).all()
 
     async def get_dish_by_id(self, dish_id: UUID) -> Dish:

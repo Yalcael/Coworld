@@ -1,7 +1,6 @@
+from typing import Sequence
 from uuid import UUID
-
 from fastapi import APIRouter, Depends
-
 from coworld.controllers.dishes import DishController
 from coworld.dependencies import get_dish_controller
 from coworld.models.dishes import DishCreate, Dish, DishUpdate
@@ -19,7 +18,7 @@ async def create_dish(*, dish_create: DishCreate, dish_controller: DishControlle
 
 
 @router.get("/", response_model=list[Dish])
-async def get_dishes(*, dish_controller: DishController = Depends(get_dish_controller)) -> list[Dish]:
+async def get_dishes(*, dish_controller: DishController = Depends(get_dish_controller)) -> Sequence[Dish]:
     return await dish_controller.get_dishes()
 
 
@@ -29,7 +28,7 @@ async def get_dish_by_id(*, dish_id: UUID, dish_controller: DishController = Dep
 
 
 @router.delete("/{dish_id}", status_code=204)
-async def delete_dish(*, dish_id: UUID, dish_controller: DishController = Depends(get_dish_controller)):
+async def delete_dish(*, dish_id: UUID, dish_controller: DishController = Depends(get_dish_controller)) -> None:
     await dish_controller.delete_dish(dish_id)
 
 
