@@ -1,7 +1,7 @@
 from fastapi import Depends
 from sqlmodel import Session
 
-from coworld.controllers.dishs import DishController
+from coworld.controllers.dishes import DishController
 from coworld.database import engine
 
 

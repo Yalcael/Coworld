@@ -1,7 +1,8 @@
 from uuid import UUID, uuid4
 from datetime import datetime
+import pydantic
 from pydantic import PositiveFloat
-from sqlmodel import SQLModel, Field
+from sqlmodel import Field, SQLModel
 from enum import Enum
 
 
@@ -21,9 +22,12 @@ class DishBase(SQLModel):
     price: PositiveFloat
 
 
-class Dish(DishBase):
+class Dish(DishBase, table=True):
     id: UUID | None = Field(default_factory=uuid4, primary_key=True, unique=True)
     created_at: datetime = Field(default_factory=lambda: datetime.now())
+
+    class Config:
+        orm_mode = True
 
 
 class DishCreate(DishBase):
