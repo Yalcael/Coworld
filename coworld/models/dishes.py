@@ -26,9 +26,6 @@ class Dish(DishBase, table=True):
     id: UUID | None = Field(default_factory=uuid4, primary_key=True, unique=True)
     created_at: datetime = Field(default_factory=lambda: datetime.now())
 
-    class Config:
-        orm_mode = True
-
 
 class DishCreate(DishBase):
     pass
