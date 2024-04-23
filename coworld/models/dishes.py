@@ -15,7 +15,7 @@ class Category(str, Enum):
 
 class DishBase(SQLModel):
     category: Category
-    title: str
+    title: str = Field(unique=True, index=True)
     ingredients: str
     description: str
     price: PositiveFloat
