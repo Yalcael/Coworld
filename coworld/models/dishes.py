@@ -1,6 +1,5 @@
 from uuid import UUID, uuid4
 from datetime import datetime
-import pydantic
 from pydantic import PositiveFloat
 from sqlmodel import Field, SQLModel
 from enum import Enum
