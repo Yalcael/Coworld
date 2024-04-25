@@ -31,4 +31,8 @@ class DishCreate(DishBase):
 
 
 class DishUpdate(DishBase):
-    price: float | None = None
+    price: PositiveFloat | None = None
+    category: Category | None = None
+    title: str | None = None
+    ingredients: str | None = None
+    description: str | None = None

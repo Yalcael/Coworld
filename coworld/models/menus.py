@@ -20,4 +20,6 @@ class MenuCreate(MenuBase):
 
 
 class MenuUpdate(MenuBase):
-    price: float | None = None
+    price: PositiveFloat | None = None
+    title: str | None = None
+    description: str | None = None
