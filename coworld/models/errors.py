@@ -1,5 +1,7 @@
 from uuid import UUID
 
+from pydantic_extra_types.phone_numbers import PhoneNumber
+
 
 class BaseError(Exception):
     def __init__(self, name: str, message: str, status_code: int):
@@ -70,11 +72,3 @@ class ReservationNotFoundError(BaseError):
         super().__init__(
             name=self.name, message=self.message, status_code=self.status_code
         )
-
-
-# class ReservationAlreadyExistsError(BaseError):
-#     def __init__(self, phone_number: str, status_code: int = 409, name: str = "ReservationAlreadyExistsError"):
-#         self.name = name
-#         self.message = f"Reservation with this phone number: {phone_number} already exists"
-#         self.status_code = status_code
-#         super().__init__(name=self.name, message=self.message, status_code=self.status_code)
