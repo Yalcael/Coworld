@@ -6,11 +6,11 @@ from enum import Enum
 
 
 class Category(str, Enum):
-    PLATS: str = 'PLATS'
-    DRINKS: str = 'DRINKS'
-    ENTRIES: str = 'ENTRIES'
-    SAUCES: str = 'SAUCES'
-    DESSERTS: str = 'DESSERTS'
+    PLATS: str = "PLATS"
+    DRINKS: str = "DRINKS"
+    ENTRIES: str = "ENTRIES"
+    SAUCES: str = "SAUCES"
+    DESSERTS: str = "DESSERTS"
 
 
 class DishBase(SQLModel):
