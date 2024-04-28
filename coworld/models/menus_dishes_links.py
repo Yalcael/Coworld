@@ -1,4 +1,4 @@
-from uuid import UUID, uuid4
+from uuid import UUID
 from datetime import datetime
 from sqlmodel import SQLModel, Field
 
@@ -9,13 +9,14 @@ class MenuDishesLinksBase(SQLModel):
 
 
 class MenuDishLinks(MenuDishesLinksBase, table=True):
-    id: UUID = Field(default_factory=uuid4, primary_key=True)
     created_at: datetime = Field(default_factory=lambda: datetime.now())
+    dish_id: UUID = Field(foreign_key="dish.id", primary_key=True)
+    menu_id: UUID = Field(foreign_key="menu.id", primary_key=True)
 
 
-class MenuDishLinksCreate(MenuDishesLinksBase):
-    pass
+class MenuDishLinksCreate(SQLModel):
+    dish_ids: list[UUID]
 
 
-class MenuDishLinksUpdate(MenuDishesLinksBase):
+class MenuDishLinksUpdate(SQLModel):
     pass

@@ -74,12 +74,32 @@ class ReservationNotFoundError(BaseError):
         )
 
 
-class MenuDishLinksNotFoundError(BaseError):
+class DishInMenuNotFoundError(BaseError):
     def __init__(
-        self, menu_id: UUID, status_code: int = 404, name: str = "MenuNotFoundError"
+        self,
+        menu_id: UUID,
+        dish_id: UUID,
+        status_code: int = 404,
+        name: str = "DishInMenuNotFoundError",
     ):
         self.name = name
-        self.message = f"Menu with ID {menu_id} not found"
+        self.message = f"Dish: {dish_id} in the menu_id: {menu_id} not found"
+        self.status_code = status_code
+        super().__init__(
+            name=self.name, message=self.message, status_code=self.status_code
+        )
+
+
+class DishAlreadyInMenuError(BaseError):
+    def __init__(
+        self,
+        dish: str,
+        menu_id: UUID,
+        status_code: int = 409,
+        name: str = "DishAlreadyInMenuError",
+    ):
+        self.name = name
+        self.message = f"Dish: {dish} in Menu: {menu_id} already in menu."
         self.status_code = status_code
         super().__init__(
             name=self.name, message=self.message, status_code=self.status_code

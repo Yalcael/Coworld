@@ -16,7 +16,7 @@ class Menu(MenuBase, table=True):
 
 
 class MenuCreate(MenuBase):
-    dishes_id: list[UUID]
+    pass
 
 
 class MenuUpdate(MenuBase):
