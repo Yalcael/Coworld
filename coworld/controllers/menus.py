@@ -1,7 +1,7 @@
 from typing import Sequence
 
-from coworld.models.dishes import Dish
-from coworld.models.menus import Menu, MenuCreate, MenuUpdate
+from coworld.models.menus import MenuCreate, MenuUpdate
+from coworld.models.models import Menu, Dish
 from coworld.models.errors import (
     MenuNotFoundError,
     MenuAlreadyExistsError,

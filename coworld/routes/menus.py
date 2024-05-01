@@ -3,7 +3,8 @@ from fastapi import APIRouter, Depends
 from typing import Sequence
 from coworld.controllers.menus import MenuController
 from coworld.dependencies import get_menu_controller
-from coworld.models.menus import Menu, MenuCreate, MenuUpdate
+from coworld.models.menus import MenuCreate, MenuUpdate
+from coworld.models.models import Menu, MenuWithDishes
 from coworld.models.menus_dishes_links import MenuDishLinksCreate
 
 router = APIRouter(
@@ -22,7 +23,7 @@ async def create_menu(
     return await menu_controller.create_menu(menu_create)
 
 
-@router.get("/", response_model=list[Menu])
+@router.get("/", response_model=list[MenuWithDishes])
 async def get_menus(
     *, menu_controller: MenuController = Depends(get_menu_controller)
 ) -> Sequence[Menu]:

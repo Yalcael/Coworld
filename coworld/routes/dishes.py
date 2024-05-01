@@ -3,7 +3,8 @@ from uuid import UUID
 from fastapi import APIRouter, Depends
 from coworld.controllers.dishes import DishController
 from coworld.dependencies import get_dish_controller
-from coworld.models.dishes import DishCreate, Dish, DishUpdate
+from coworld.models.dishes import DishCreate, DishUpdate
+from coworld.models.models import Dish, DishInMenu
 
 router = APIRouter(
     prefix="/dishes",
@@ -21,7 +22,7 @@ async def create_dish(
     return await dish_controller.create_dish(dish_create)
 
 
-@router.get("/", response_model=list[Dish])
+@router.get("/", response_model=list[DishInMenu])
 async def get_dishes(
     *, dish_controller: DishController = Depends(get_dish_controller)
 ) -> Sequence[Dish]:
