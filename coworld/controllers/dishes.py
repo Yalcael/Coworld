@@ -49,3 +49,11 @@ class DishController:
             return dish
         except NoResultFound:
             raise DishNotFoundError(dish_id=dish_id)
+
+    async def get_halal_dishes(self, is_halal: bool) -> Sequence[Dish]:
+        return self.session.exec(select(Dish).where(Dish.halal == is_halal)).all()
+
+    async def get_dishes_by_category(self, dishes_category: str) -> Sequence[Dish]:
+        return self.session.exec(
+            select(Dish).where(Dish.category == dishes_category)
+        ).all()

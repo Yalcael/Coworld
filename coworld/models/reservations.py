@@ -30,7 +30,7 @@ class ReservationCreate(ReservationBase):
     pass
 
 
-class ReservationUpdate(ReservationBase):
+class ReservationUpdate(SQLModel):
     reservation_category: ReservationCategory | None = None
     name: str | None = None
     family_name: str | None = None

@@ -16,6 +16,7 @@ class DishBase(SQLModel):
     title: str = Field(unique=True, index=True)
     ingredients: str
     description: str
+    halal: bool
     price: PositiveFloat
 
 
@@ -23,9 +24,10 @@ class DishCreate(DishBase):
     pass
 
 
-class DishUpdate(DishBase):
+class DishUpdate(SQLModel):
     price: PositiveFloat | None = None
     category: Category | None = None
     title: str | None = None
     ingredients: str | None = None
     description: str | None = None
+    halal: bool | None = None

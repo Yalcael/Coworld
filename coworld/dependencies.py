@@ -1,3 +1,5 @@
+from typing import Generator
+
 from fastapi import Depends
 from sqlmodel import Session
 
@@ -7,7 +9,7 @@ from coworld.controllers.reservations import ReservationController
 from coworld.database import engine
 
 
-def get_session() -> Session:
+def get_session() -> Generator[Session, None, None]:
     with Session(engine) as session:
         yield session
 

@@ -12,7 +12,7 @@ class MenuCreate(MenuBase):
     pass
 
 
-class MenuUpdate(MenuBase):
+class MenuUpdate(SQLModel):
     price: PositiveFloat | None = None
     title: str | None = None
     description: str | None = None
