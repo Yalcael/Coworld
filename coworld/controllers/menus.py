@@ -87,3 +87,6 @@ class MenuController:
             self.session.commit()
         except NoResultFound:
             raise DishInMenuNotFoundError(menu_id=menu_id, dish_id=dish_id)
+
+    async def get_discounted_menus(self) -> Sequence[Menu]:
+        return self.session.exec(select(Menu).where(Menu.discount > 0)).all()

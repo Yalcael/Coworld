@@ -72,3 +72,10 @@ async def delete_dish_from_menu(
     menu_controller: MenuController = Depends(get_menu_controller)
 ) -> None:
     await menu_controller.delete_dish_from_menu(menu_id, dish_id)
+
+
+@router.get("/type/discount", response_model=list[Menu])
+async def get_discounted_menus(
+    menu_controller: MenuController = Depends(get_menu_controller),
+) -> Sequence[Menu]:
+    return await menu_controller.get_discounted_menus()

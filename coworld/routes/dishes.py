@@ -60,7 +60,7 @@ async def get_halal_dishes(
     return await dish_controller.get_halal_dishes(is_halal)
 
 
-@router.get("/type/{category}", response_model=list[Dish])
+@router.get("/type/category", response_model=list[Dish])
 async def get_dishes_by_category(
     category: Category, dish_controller: DishController = Depends(get_dish_controller)
 ) -> Sequence[Dish]:
