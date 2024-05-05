@@ -10,7 +10,7 @@ from coworld.routes.reservations import router as reservations_router
 
 
 def create_app():
-    app = FastAPI()
+    app = FastAPI(title="Coworld API")
     app.include_router(dishes_router)
     app.include_router(menus_router)
     app.include_router(reservations_router)
