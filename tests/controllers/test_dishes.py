@@ -50,3 +50,35 @@ async def test_get_dish_by_id(dish_controller: DishController, faker: Faker) -> 
     assert retrieved_dish.ingredients == dish_create.ingredients
     assert retrieved_dish.price == dish_create.price
     assert retrieved_dish.halal == dish_create.halal
+
+
+@pytest.mark.asyncio
+async def test_get_dishes(dish_controller: DishController, faker: Faker) -> None:
+    # Prepare
+    number_dishes = 5
+    created_dishes = []
+    for _ in range(number_dishes):
+        dish_create = DishCreate(
+            title=faker.text(max_nb_chars=12),
+            description=faker.text(max_nb_chars=24),
+            category=random.choice(list(Category)),
+            ingredients=faker.text(max_nb_chars=24),
+            price=random.uniform(0.99, 99.99),
+            halal=random.choice([True, False]),
+        )
+        created_dish = await dish_controller.create_dish(dish_create)
+        created_dishes.append(created_dish)
+
+    # Act
+    all_dishes = await dish_controller.get_dishes()
+
+    # Assert
+    assert len(all_dishes) == number_dishes
+
+    for i, created_dish in enumerate(created_dishes):
+        assert all_dishes[i].title == created_dish.title
+        assert all_dishes[i].description == created_dish.description
+        assert all_dishes[i].category == created_dish.category
+        assert all_dishes[i].ingredients == created_dish.ingredients
+        assert all_dishes[i].price == created_dish.price
+        assert all_dishes[i].halal == created_dish.halal
