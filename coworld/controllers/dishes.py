@@ -1,5 +1,5 @@
 from typing import Sequence
-from coworld.models.dishes import DishCreate, DishUpdate
+from coworld.models.dishes import DishCreate, DishUpdate, Category
 from coworld.models.models import Dish
 from coworld.models.errors import DishNotFoundError, DishAlreadyExistsError
 from uuid import UUID
@@ -53,7 +53,7 @@ class DishController:
     async def get_halal_dishes(self, is_halal: bool) -> Sequence[Dish]:
         return self.session.exec(select(Dish).where(Dish.halal == is_halal)).all()
 
-    async def get_dishes_by_category(self, dishes_category: str) -> Sequence[Dish]:
+    async def get_dishes_by_category(self, dishes_category: Category) -> Sequence[Dish]:
         return self.session.exec(
             select(Dish).where(Dish.category == dishes_category)
         ).all()

@@ -4,7 +4,8 @@ from faker import Faker
 from sqlmodel import Session, select
 
 from coworld.controllers.dishes import DishController
-from coworld.models.dishes import DishCreate, Category
+from coworld.models.dishes import DishCreate, Category, DishUpdate
+from coworld.models.errors import DishNotFoundError
 from coworld.models.models import Dish
 
 
@@ -12,6 +13,7 @@ from coworld.models.models import Dish
 async def test_create_dish(
     dish_controller: DishController, session: Session, faker: Faker
 ) -> None:
+    # Prepare
     dish_create = DishCreate(
         title=faker.text(max_nb_chars=12),
         description=faker.text(max_nb_chars=24),
@@ -21,8 +23,11 @@ async def test_create_dish(
         halal=random.choice([True, False]),
     )
     result = await dish_controller.create_dish(dish_create)
+
+    # Act
     dish = session.exec(select(Dish).where(Dish.id == result.id)).one()
 
+    # Assert
     assert result.title == dish_create.title == dish.title
     assert result.description == dish_create.description == dish.description
     assert result.category == dish_create.category == dish.category
@@ -33,6 +38,7 @@ async def test_create_dish(
 
 @pytest.mark.asyncio
 async def test_get_dish_by_id(dish_controller: DishController, faker: Faker) -> None:
+    # Prepare
     dish_create = DishCreate(
         title=faker.text(max_nb_chars=12),
         description=faker.text(max_nb_chars=24),
@@ -42,8 +48,11 @@ async def test_get_dish_by_id(dish_controller: DishController, faker: Faker) -> 
         halal=random.choice([True, False]),
     )
     created_dish = await dish_controller.create_dish(dish_create)
+
+    # Act
     retrieved_dish = await dish_controller.get_dish_by_id(created_dish.id)
 
+    # Assert
     assert retrieved_dish.title == dish_create.title
     assert retrieved_dish.description == dish_create.description
     assert retrieved_dish.category == dish_create.category
@@ -82,3 +91,57 @@ async def test_get_dishes(dish_controller: DishController, faker: Faker) -> None
         assert all_dishes[i].ingredients == created_dish.ingredients
         assert all_dishes[i].price == created_dish.price
         assert all_dishes[i].halal == created_dish.halal
+
+
+@pytest.mark.asyncio
+async def test_update_dish(dish_controller: DishController, faker: Faker) -> None:
+    # Prepare
+    dish_update = DishCreate(
+        title=faker.text(max_nb_chars=12),
+        description=faker.text(max_nb_chars=24),
+        category=random.choice(list(Category)),
+        ingredients=faker.text(max_nb_chars=24),
+        price=random.uniform(0.99, 99.99),
+        halal=random.choice([True, False]),
+    )
+    new_dish = await dish_controller.create_dish(dish_update)
+
+    dish_update = DishUpdate(
+        title=faker.text(max_nb_chars=12),
+        description=faker.text(max_nb_chars=24),
+        category=random.choice(list(Category)),
+        ingredients=faker.text(max_nb_chars=24),
+        price=random.uniform(0.99, 99.99),
+        halal=random.choice([True, False]),
+    )
+    # Act
+    updated_dish = await dish_controller.update_dish(new_dish.id, dish_update)
+
+    # Assert
+    assert updated_dish.title == dish_update.title
+    assert updated_dish.description == dish_update.description
+    assert updated_dish.category == dish_update.category
+    assert updated_dish.ingredients == dish_update.ingredients
+    assert updated_dish.price == dish_update.price
+    assert updated_dish.halal == dish_update.halal
+
+
+@pytest.mark.asyncio
+async def test_delete_dish(dish_controller: DishController, faker: Faker) -> None:
+    # Prepare
+    dish_create = DishCreate(
+        title=faker.text(max_nb_chars=12),
+        description=faker.text(max_nb_chars=24),
+        category=random.choice(list(Category)),
+        ingredients=faker.text(max_nb_chars=24),
+        price=random.uniform(0.99, 99.99),
+        halal=random.choice([True, False]),
+    )
+    new_dish = await dish_controller.create_dish(dish_create)
+
+    # Act
+    await dish_controller.delete_dish(new_dish.id)
+
+    # Assert
+    with pytest.raises(DishNotFoundError):
+        await dish_controller.get_dish_by_id(new_dish.id)
