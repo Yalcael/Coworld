@@ -1,4 +1,5 @@
 import random
+
 import pytest
 from faker import Faker
 from sqlmodel import Session, select
@@ -22,9 +23,9 @@ async def test_create_dish(
         price=random.uniform(0.99, 99.99),
         halal=random.choice([True, False]),
     )
+    # Act
     result = await dish_controller.create_dish(dish_create)
 
-    # Act
     dish = session.exec(select(Dish).where(Dish.id == result.id)).one()
 
     # Assert
@@ -38,7 +39,7 @@ async def test_create_dish(
 
 @pytest.mark.asyncio
 async def test_create_dish_already_exist(
-    dish_controller: DishController, session: Session, faker: Faker
+    dish_controller: DishController, faker: Faker
 ) -> None:
     # Prepare
 
@@ -50,7 +51,7 @@ async def test_create_dish_already_exist(
         price=random.uniform(0.99, 99.99),
         halal=random.choice([True, False]),
     )
-    result = await dish_controller.create_dish(dish_create)
+    await dish_controller.create_dish(dish_create)
 
     # Act / Assert
     with pytest.raises(DishAlreadyExistsError):
@@ -80,6 +81,17 @@ async def test_get_dish_by_id(dish_controller: DishController, faker: Faker) -> 
     assert retrieved_dish.ingredients == dish_create.ingredients
     assert retrieved_dish.price == dish_create.price
     assert retrieved_dish.halal == dish_create.halal
+
+
+@pytest.mark.asyncio
+async def test_get_dish_by_id_not_found_error(
+    dish_controller: DishController, faker: Faker
+) -> None:
+    # Prepare
+    non_existent_id = faker.uuid4()
+    # Act and Assert
+    with pytest.raises(DishNotFoundError):
+        await dish_controller.get_dish_by_id(non_existent_id)
 
 
 @pytest.mark.asyncio
@@ -117,7 +129,7 @@ async def test_get_dishes(dish_controller: DishController, faker: Faker) -> None
 @pytest.mark.asyncio
 async def test_update_dish(dish_controller: DishController, faker: Faker) -> None:
     # Prepare
-    dish_update = DishCreate(
+    dish_create = DishCreate(
         title=faker.text(max_nb_chars=12),
         description=faker.text(max_nb_chars=24),
         category=random.choice(list(Category)),
@@ -125,7 +137,7 @@ async def test_update_dish(dish_controller: DishController, faker: Faker) -> Non
         price=random.uniform(0.99, 99.99),
         halal=random.choice([True, False]),
     )
-    new_dish = await dish_controller.create_dish(dish_update)
+    new_dish = await dish_controller.create_dish(dish_create)
 
     dish_update = DishUpdate(
         title=faker.text(max_nb_chars=12),
@@ -148,6 +160,26 @@ async def test_update_dish(dish_controller: DishController, faker: Faker) -> Non
 
 
 @pytest.mark.asyncio
+async def test_update_not_found_error(
+    dish_controller: DishController, faker: Faker
+) -> None:
+    # Prepare
+    dish_update = DishUpdate(
+        title=faker.text(max_nb_chars=12),
+        description=faker.text(max_nb_chars=24),
+        category=random.choice(list(Category)),
+        ingredients=faker.text(max_nb_chars=24),
+        price=random.uniform(0.99, 99.99),
+        halal=random.choice([True, False]),
+    )
+    nonexistent_id = faker.uuid4()
+
+    # Act and Assert
+    with pytest.raises(DishNotFoundError):
+        await dish_controller.update_dish(nonexistent_id, dish_update)
+
+
+@pytest.mark.asyncio
 async def test_delete_dish(dish_controller: DishController, faker: Faker) -> None:
     # Prepare
     dish_create = DishCreate(
@@ -166,6 +198,18 @@ async def test_delete_dish(dish_controller: DishController, faker: Faker) -> Non
     # Assert
     with pytest.raises(DishNotFoundError):
         await dish_controller.get_dish_by_id(new_dish.id)
+
+
+@pytest.mark.asyncio
+async def test_delete_dish_not_found_error(
+    dish_controller: DishController, faker: Faker
+) -> None:
+    # Prepare
+    nonexistent_id = faker.uuid4()
+
+    # Act and Assert
+    with pytest.raises(DishNotFoundError):
+        await dish_controller.delete_dish(nonexistent_id)
 
 
 @pytest.mark.asyncio
