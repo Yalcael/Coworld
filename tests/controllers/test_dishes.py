@@ -5,7 +5,7 @@ from sqlmodel import Session, select
 
 from coworld.controllers.dishes import DishController
 from coworld.models.dishes import DishCreate, Category, DishUpdate
-from coworld.models.errors import DishNotFoundError
+from coworld.models.errors import DishNotFoundError, DishAlreadyExistsError
 from coworld.models.models import Dish
 
 
@@ -34,6 +34,27 @@ async def test_create_dish(
     assert result.ingredients == dish_create.ingredients == dish.ingredients
     assert result.price == dish_create.price == dish.price
     assert result.halal == dish_create.halal == dish.halal
+
+
+@pytest.mark.asyncio
+async def test_create_dish_already_exist(
+    dish_controller: DishController, session: Session, faker: Faker
+) -> None:
+    # Prepare
+
+    dish_create = DishCreate(
+        title=faker.text(max_nb_chars=12),
+        description=faker.text(max_nb_chars=24),
+        category=random.choice(list(Category)),
+        ingredients=faker.text(max_nb_chars=24),
+        price=random.uniform(0.99, 99.99),
+        halal=random.choice([True, False]),
+    )
+    result = await dish_controller.create_dish(dish_create)
+
+    # Act / Assert
+    with pytest.raises(DishAlreadyExistsError):
+        await dish_controller.create_dish(dish_create)
 
 
 @pytest.mark.asyncio
@@ -145,3 +166,65 @@ async def test_delete_dish(dish_controller: DishController, faker: Faker) -> Non
     # Assert
     with pytest.raises(DishNotFoundError):
         await dish_controller.get_dish_by_id(new_dish.id)
+
+
+@pytest.mark.asyncio
+async def test_get_dishes_by_category(
+    dish_controller: DishController, faker: Faker
+) -> None:
+    # Prepare
+    category = random.choice(list(Category))
+    number_dishes = 5
+
+    for _ in range(number_dishes):
+        dish_create = DishCreate(
+            title=faker.text(max_nb_chars=12),
+            description=faker.text(max_nb_chars=24),
+            category=category,
+            ingredients=faker.text(max_nb_chars=24),
+            price=random.uniform(0.99, 99.99),
+            halal=random.choice([True, False]),
+        )
+        await dish_controller.create_dish(dish_create)
+
+    # Act
+    dishes_by_category = await dish_controller.get_dishes_by_category(category)
+
+    # Assert
+    for dish in dishes_by_category:
+        assert dish.category == category
+
+
+@pytest.mark.asyncio
+async def test_get_halal_dishes(dish_controller: DishController, faker: Faker) -> None:
+    # Prepare
+    number_dishes = 5
+
+    for _ in range(number_dishes):
+        dish_create = DishCreate(
+            title=faker.text(max_nb_chars=12),
+            description=faker.text(max_nb_chars=24),
+            category=random.choice(list(Category)),
+            ingredients=faker.text(max_nb_chars=24),
+            price=random.uniform(0.99, 99.99),
+            halal=True,
+        )
+        await dish_controller.create_dish(dish_create)
+
+    for _ in range(number_dishes):
+        dish_create = DishCreate(
+            title=faker.text(max_nb_chars=12),
+            description=faker.text(max_nb_chars=24),
+            category=random.choice(list(Category)),
+            ingredients=faker.text(max_nb_chars=24),
+            price=random.uniform(0.99, 99.99),
+            halal=False,
+        )
+        await dish_controller.create_dish(dish_create)
+
+    # Act
+    halal_dishes = await dish_controller.get_halal_dishes(is_halal=True)
+
+    # Assert
+    for dish in halal_dishes:
+        assert dish.halal is True
