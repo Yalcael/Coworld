@@ -6,6 +6,7 @@ from sqlmodel import SQLModel, Session
 from starlette.testclient import TestClient
 from coworld.api import create_app
 from coworld.controllers.dishes import DishController
+from coworld.controllers.menus import MenuController
 
 
 @pytest.fixture(name="engine")
@@ -25,6 +26,11 @@ def fixture_session(engine) -> Session:
 @pytest.fixture(name="dish_controller")
 def dish_controller(session) -> DishController:
     return DishController(session)
+
+
+@pytest.fixture(name="menu_controller")
+def menu_controller(session) -> MenuController:
+    return MenuController(session)
 
 
 @pytest.fixture(name="faker")
