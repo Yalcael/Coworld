@@ -160,7 +160,7 @@ async def test_update_dish(dish_controller: DishController, faker: Faker) -> Non
 
 
 @pytest.mark.asyncio
-async def test_update_not_found_error(
+async def test_update_dish_not_found_error(
     dish_controller: DishController, faker: Faker
 ) -> None:
     # Prepare

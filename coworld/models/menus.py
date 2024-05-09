@@ -24,4 +24,4 @@ class MenuUpdate(SQLModel):
     price: PositiveFloat | None = None
     title: str | None = None
     description: str | None = None
-    discount_percentage: float | None = None
+    discount: float | None = None

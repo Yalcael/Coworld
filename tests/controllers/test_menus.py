@@ -5,7 +5,7 @@ from faker import Faker
 from sqlmodel import Session, select
 
 from coworld.models.errors import MenuAlreadyExistsError, MenuNotFoundError
-from coworld.models.menus import MenuCreate
+from coworld.models.menus import MenuCreate, MenuUpdate
 from coworld.models.models import Menu
 
 
@@ -109,3 +109,46 @@ async def test_get_menus(menu_controller: MenuController, faker: Faker) -> None:
         assert all_menus[i].description == created_menu.description
         assert all_menus[i].price == created_menu.price
         assert all_menus[i].discount == created_menu.discount
+
+
+@pytest.mark.asyncio
+async def test_update_menu(menu_controller: MenuController, faker: Faker) -> None:
+    # Prepare
+    menu_create = MenuCreate(
+        title=faker.text(max_nb_chars=12),
+        description=faker.text(max_nb_chars=24),
+        price=random.uniform(2.99, 99.99),
+        discount=random.randint(0, 100),
+    )
+    new_menu = await menu_controller.create_menu(menu_create)
+
+    menu_update = MenuUpdate(
+        title=faker.text(max_nb_chars=12),
+        description=faker.text(max_nb_chars=24),
+        price=random.uniform(2.99, 99.99),
+        discount=random.randint(0, 100),
+    )
+    # Act
+    updated_menu = await menu_controller.update_menu(new_menu.id, menu_update)
+
+    # Assert
+    assert updated_menu.title == menu_update.title
+    assert updated_menu.description == menu_update.description
+    assert updated_menu.price == menu_update.price
+    assert updated_menu.discount == menu_update.discount
+
+
+@pytest.mark.asyncio
+async def test_update_menu_not_found(menu_controller: MenuController, faker: Faker) -> None:
+    # Prepare
+    menu_update = MenuUpdate(
+        title=faker.text(max_nb_chars=12),
+        description=faker.text(max_nb_chars=24),
+        price=random.uniform(2.99, 99.99),
+        discount=random.randint(0, 100),
+    )
+    nonexistent_id = faker.uuid4()
+
+    # Act and Assert
+    with pytest.raises(MenuNotFoundError):
+        await menu_controller.update_menu(nonexistent_id, menu_update)
