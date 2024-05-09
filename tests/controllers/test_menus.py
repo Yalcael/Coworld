@@ -4,7 +4,7 @@ import random
 from faker import Faker
 from sqlmodel import Session, select
 
-from coworld.models.errors import MenuAlreadyExistsError
+from coworld.models.errors import MenuAlreadyExistsError, MenuNotFoundError
 from coworld.models.menus import MenuCreate
 from coworld.models.models import Menu
 
@@ -48,3 +48,64 @@ async def test_menu_already_exist_error(
     # Act & Assert
     with pytest.raises(MenuAlreadyExistsError):
         await menu_controller.create_menu(menu_create)
+
+
+@pytest.mark.asyncio
+async def test_get_menu_by_id(menu_controller: MenuController, faker: Faker) -> None:
+    # Prepare
+    menu_create = MenuCreate(
+        title=faker.text(max_nb_chars=12),
+        description=faker.text(max_nb_chars=24),
+        price=random.uniform(2.99, 99.99),
+        discount=random.randint(0, 100),
+    )
+    created_menu = await menu_controller.create_menu(menu_create)
+
+    # Act
+    retrieved_menu = await menu_controller.get_menu_by_id(created_menu.id)
+
+    # Assert
+    assert retrieved_menu.title == menu_create.title
+    assert retrieved_menu.description == menu_create.description
+    assert retrieved_menu.price == menu_create.price
+    assert retrieved_menu.discount == menu_create.discount
+
+
+@pytest.mark.asyncio
+async def test_get_menu_by_id_not_found(
+    menu_controller: MenuController, faker: Faker
+) -> None:
+    # Prepare
+    nonexistent_menu = faker.uuid4()
+
+    # Act and Assert
+    with pytest.raises(MenuNotFoundError):
+        await menu_controller.get_menu_by_id(nonexistent_menu)
+
+
+@pytest.mark.asyncio
+async def test_get_menus(menu_controller: MenuController, faker: Faker) -> None:
+    # Prepare
+    number_menus = 5
+    created_menus = []
+    for _ in range(number_menus):
+        menu_create = MenuCreate(
+            title=faker.text(max_nb_chars=12),
+            description=faker.text(max_nb_chars=24),
+            price=random.uniform(2.99, 99.99),
+            discount=random.randint(0, 100),
+        )
+        created_menu = await menu_controller.create_menu(menu_create)
+        created_menus.append(created_menu)
+
+    # Act
+    all_menus = await menu_controller.get_menus()
+
+    # Assert
+    assert len(all_menus) == number_menus
+
+    for i, created_menu in enumerate(created_menus):
+        assert all_menus[i].title == created_menu.title
+        assert all_menus[i].description == created_menu.description
+        assert all_menus[i].price == created_menu.price
+        assert all_menus[i].discount == created_menu.discount
