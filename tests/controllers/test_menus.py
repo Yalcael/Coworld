@@ -139,7 +139,9 @@ async def test_update_menu(menu_controller: MenuController, faker: Faker) -> Non
 
 
 @pytest.mark.asyncio
-async def test_update_menu_not_found(menu_controller: MenuController, faker: Faker) -> None:
+async def test_update_menu_not_found(
+    menu_controller: MenuController, faker: Faker
+) -> None:
     # Prepare
     menu_update = MenuUpdate(
         title=faker.text(max_nb_chars=12),
@@ -152,3 +154,34 @@ async def test_update_menu_not_found(menu_controller: MenuController, faker: Fak
     # Act and Assert
     with pytest.raises(MenuNotFoundError):
         await menu_controller.update_menu(nonexistent_id, menu_update)
+
+
+@pytest.mark.asyncio
+async def test_delete_menu(menu_controller: MenuController, faker: Faker) -> None:
+    # Prepare
+    menu_create = MenuCreate(
+        title=faker.text(max_nb_chars=12),
+        description=faker.text(max_nb_chars=24),
+        price=random.uniform(2.99, 99.99),
+        discount=random.randint(0, 100),
+    )
+    new_menu = await menu_controller.create_menu(menu_create)
+
+    # Act
+    await menu_controller.delete_menu(new_menu.id)
+
+    # Assert
+    with pytest.raises(MenuNotFoundError):
+        await menu_controller.get_menu_by_id(new_menu.id)
+
+
+@pytest.mark.asyncio
+async def test_delete_menu_not_found_error(
+    menu_controller: MenuController, faker: Faker
+) -> None:
+    # Prepare
+    nonexistent_id = faker.uuid4()
+
+    # Act and Assert
+    with pytest.raises(MenuNotFoundError):
+        await menu_controller.delete_menu(nonexistent_id)
