@@ -12,15 +12,6 @@ from coworld.models.reservations import (
 )
 
 
-def generate_french_phone_number():
-    # Randomly select either "+336" or "+337" as the prefix
-    prefix = random.choice(["+336", "+337"])
-    # Generate the remaining 8 digits
-    remaining_digits = ''.join(str(random.randint(0, 9)) for _ in range(8))
-    # Concatenate the prefix and remaining digits to form the phone number
-    return PhoneNumber(f"{prefix}{remaining_digits}")
-
-
 @pytest.mark.asyncio
 async def test_create_reservation(
     reservation_controller: ReservationController, session: Session, faker: Faker
@@ -32,7 +23,7 @@ async def test_create_reservation(
         family_name=faker.name(),
         amount_of_people=random.randint(0, 100),
         email_address=faker.email(),
-        phone_number=generate_french_phone_number(),
+        phone_number=PhoneNumber("+33699853924"),
         reservation_time=faker.date_time(),
     )
     # Act
