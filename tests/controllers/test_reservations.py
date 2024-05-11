@@ -23,7 +23,7 @@ async def test_create_reservation(
         family_name=faker.name(),
         amount_of_people=random.randint(0, 100),
         email_address=faker.email(),
-        phone_number=PhoneNumber("+33699853924"),
+        phone_number=PhoneNumber("+33611223344"),
         reservation_time=faker.date_time(),
     )
     # Act
