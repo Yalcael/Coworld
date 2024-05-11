@@ -13,8 +13,12 @@ from coworld.models.reservations import (
 
 
 def generate_french_phone_number():
-    # French phone numbers start with "+336" followed by 8 digits
-    return PhoneNumber(f"+336{''.join(str(random.randint(0, 9)) for _ in range(8))}")
+    # Randomly select either "+336" or "+337" as the prefix
+    prefix = random.choice(["+336", "+337"])
+    # Generate the remaining 8 digits
+    remaining_digits = ''.join(str(random.randint(0, 9)) for _ in range(8))
+    # Concatenate the prefix and remaining digits to form the phone number
+    return PhoneNumber(f"{prefix}{remaining_digits}")
 
 
 @pytest.mark.asyncio
@@ -34,9 +38,7 @@ async def test_create_reservation(
     # Act
     result = await reservation_controller.create_reservation(reservation_create)
 
-    reservation = session.exec(
-        select(Reservation).where(Reservation.id == result.id)
-    ).one()
+    reservation = session.exec(select(Reservation).where(Reservation.id == result.id)).one()
 
     # Assert
     assert result.reservation_category == reservation_create.reservation_category == reservation.reservation_category
