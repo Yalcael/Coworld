@@ -7,6 +7,7 @@ from starlette.testclient import TestClient
 from coworld.api import create_app
 from coworld.controllers.dishes import DishController
 from coworld.controllers.menus import MenuController
+from coworld.controllers.reservations import ReservationController
 
 
 @pytest.fixture(name="engine")
@@ -31,6 +32,11 @@ def dish_controller(session) -> DishController:
 @pytest.fixture(name="menu_controller")
 def menu_controller(session) -> MenuController:
     return MenuController(session)
+
+
+@pytest.fixture(name="reservation_controller")
+def reservation_controller(session) -> ReservationController:
+    return ReservationController(session)
 
 
 @pytest.fixture(name="faker")
