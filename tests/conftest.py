@@ -12,7 +12,7 @@ from coworld.controllers.reservations import ReservationController
 
 @pytest.fixture(name="engine")
 def fixture_engine():
-    sqlite_url = "sqlite://"
+    sqlite_url = "sqlite:///:memory:"
     engine = create_engine(sqlite_url, connect_args={"check_same_thread": False})
     SQLModel.metadata.create_all(engine)
     return engine

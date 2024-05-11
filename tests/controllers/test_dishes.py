@@ -235,8 +235,14 @@ async def test_get_dishes_by_category(
     dishes_by_category = await dish_controller.get_dishes_by_category(category)
 
     # Assert
+    assert dishes_by_category
     for dish in dishes_by_category:
         assert dish.category == category
+        assert dish.title
+        assert dish.description
+        assert dish.ingredients
+        assert 0.99 <= dish.price <= 99.99
+        assert isinstance(dish.halal, bool)
 
 
 @pytest.mark.asyncio
@@ -270,5 +276,11 @@ async def test_get_halal_dishes(dish_controller: DishController, faker: Faker) -
     halal_dishes = await dish_controller.get_halal_dishes(is_halal=True)
 
     # Assert
+    assert halal_dishes
     for dish in halal_dishes:
         assert dish.halal is True
+        assert dish.title
+        assert dish.category
+        assert dish.description
+        assert dish.ingredients
+        assert 0.99 <= dish.price <= 99.99

@@ -33,7 +33,7 @@ async def test_create_menu(
 
 
 @pytest.mark.asyncio
-async def test_menu_already_exist_error(
+async def test_create_menu_already_exist_error(
     menu_controller: MenuController, faker: Faker
 ) -> None:
     # Prepare
@@ -76,11 +76,11 @@ async def test_get_menu_by_id_not_found(
     menu_controller: MenuController, faker: Faker
 ) -> None:
     # Prepare
-    nonexistent_menu = faker.uuid4()
+    nonexistent_id = faker.uuid4()
 
     # Act and Assert
     with pytest.raises(MenuNotFoundError):
-        await menu_controller.get_menu_by_id(nonexistent_menu)
+        await menu_controller.get_menu_by_id(nonexistent_id)
 
 
 @pytest.mark.asyncio
