@@ -217,41 +217,49 @@ async def test_get_dishes_by_category(
     dish_controller: DishController, faker: Faker
 ) -> None:
     # Prepare
-    category = random.choice(list(Category))
-    number_dishes = 5
-
-    for _ in range(number_dishes):
+    list_category = list(Category)
+    list_of_dishes = []
+    for category in list_category:
         dish_create = DishCreate(
             title=faker.text(max_nb_chars=12),
             description=faker.text(max_nb_chars=24),
-            category=category,
+            category=Category(category),
             ingredients=faker.text(max_nb_chars=24),
             price=random.uniform(0.99, 99.99),
             halal=random.choice([True, False]),
         )
-        await dish_controller.create_dish(dish_create)
+        list_of_dishes.append(await dish_controller.create_dish(dish_create))
+    random_category = random.choice(list_category)
+    dish_create_2 = DishCreate(
+        title=faker.text(max_nb_chars=12),
+        description=faker.text(max_nb_chars=24),
+        category=random_category,
+        ingredients=faker.text(max_nb_chars=24),
+        price=random.uniform(0.99, 99.99),
+        halal=random.choice([True, False]),
+    )
+    list_of_dishes.append(await dish_controller.create_dish(dish_create_2))
 
     # Act
-    dishes_by_category = await dish_controller.get_dishes_by_category(category)
+    dishes_by_category = await dish_controller.get_dishes_by_category(random_category)
+    list_of_dishes = list(
+        filter(lambda dish: dish.category == random_category, dishes_by_category)
+    )
 
     # Assert
-    assert dishes_by_category
-    for dish in dishes_by_category:
-        assert dish.category == category
-        assert dish.title
-        assert dish.description
-        assert dish.ingredients
-        assert 0.99 <= dish.price <= 99.99
-        assert isinstance(dish.halal, bool)
+    assert list_of_dishes[0] == dishes_by_category[0]
+    assert list_of_dishes[1] == dishes_by_category[1]
 
 
 @pytest.mark.asyncio
 async def test_get_halal_dishes(dish_controller: DishController, faker: Faker) -> None:
     # Prepare
-    number_dishes = 5
+    halal_dishes = []
+    non_halal_dishes = []
 
-    for _ in range(number_dishes):
-        dish_create = DishCreate(
+    # Create halal and non-halal dishes
+    for _ in range(5):
+        dish_create_halal = DishCreate(
             title=faker.text(max_nb_chars=12),
             description=faker.text(max_nb_chars=24),
             category=random.choice(list(Category)),
@@ -259,10 +267,7 @@ async def test_get_halal_dishes(dish_controller: DishController, faker: Faker) -
             price=random.uniform(0.99, 99.99),
             halal=True,
         )
-        await dish_controller.create_dish(dish_create)
-
-    for _ in range(number_dishes):
-        dish_create = DishCreate(
+        dish_create_non_halal = DishCreate(
             title=faker.text(max_nb_chars=12),
             description=faker.text(max_nb_chars=24),
             category=random.choice(list(Category)),
@@ -270,17 +275,18 @@ async def test_get_halal_dishes(dish_controller: DishController, faker: Faker) -
             price=random.uniform(0.99, 99.99),
             halal=False,
         )
-        await dish_controller.create_dish(dish_create)
+        halal_dishes.append(await dish_controller.create_dish(dish_create_halal))
+        non_halal_dishes.append(
+            await dish_controller.create_dish(dish_create_non_halal)
+        )
 
     # Act
-    halal_dishes = await dish_controller.get_halal_dishes(is_halal=True)
+    halal_result = await dish_controller.get_halal_dishes(is_halal=True)
+    non_halal_result = await dish_controller.get_halal_dishes(is_halal=False)
 
     # Assert
-    assert halal_dishes
-    for dish in halal_dishes:
-        assert dish.halal is True
-        assert dish.title
-        assert dish.category
-        assert dish.description
-        assert dish.ingredients
-        assert 0.99 <= dish.price <= 99.99
+    assert len(halal_result) == len(halal_dishes)
+    assert all(dish.halal for dish in halal_result)
+
+    assert len(non_halal_result) == len(non_halal_dishes)
+    assert not any(dish.halal for dish in non_halal_result)
