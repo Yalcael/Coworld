@@ -16,6 +16,7 @@ class MenuDishLinks(MenuDishesLinksBase, table=True):
 
 class MenuDishLinksCreate(SQLModel):
     dish_ids: list[UUID]
+    menu_id: UUID
 
 
 class MenuDishLinksUpdate(SQLModel):
