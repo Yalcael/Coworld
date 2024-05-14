@@ -6,7 +6,7 @@ from faker import Faker
 from sqlmodel import Session, select
 
 from coworld.models.dishes import DishCreate, Category
-from coworld.models.errors import MenuAlreadyExistsError, MenuNotFoundError
+from coworld.models.errors import MenuAlreadyExistsError, MenuNotFoundError, DishAlreadyInMenuError, DishInMenuNotFoundError
 from coworld.models.menus import MenuCreate, MenuUpdate
 from coworld.models.menus_dishes_links import MenuDishLinksCreate
 from coworld.models.models import Menu
@@ -264,3 +264,84 @@ async def test_delete_dish_from_menu(
     # Assert
     updated_menu = await menu_controller.get_menu_by_id(created_menu.id)
     assert created_dish.id not in [dish.id for dish in updated_menu.dishes]
+
+
+@pytest.mark.asyncio
+async def test_add_dish_to_menu_already_exists_error(
+    dish_controller: DishController, menu_controller: MenuController, faker: Faker
+) -> None:
+    # Prepare
+    menu_create = MenuCreate(
+        title=faker.text(max_nb_chars=12),
+        description=faker.text(max_nb_chars=24),
+        price=random.uniform(2.99, 99.99),
+        discount=random.randint(0, 100),
+    )
+    created_menu = await menu_controller.create_menu(menu_create)
+
+    dish_create = DishCreate(
+        title=faker.text(max_nb_chars=12),
+        description=faker.text(max_nb_chars=24),
+        category=random.choice(list(Category)),
+        ingredients=faker.text(max_nb_chars=24),
+        price=random.uniform(0.99, 99.99),
+        halal=random.choice([True, False]),
+    )
+    created_dish = await dish_controller.create_dish(dish_create)
+
+    menu_dish_links_create = MenuDishLinksCreate(
+        dish_ids=[created_dish.id], menu_id=created_menu.id
+    )
+
+    await menu_controller.add_dish_to_menu(
+        menu_dish_links_create=menu_dish_links_create
+    )
+
+    # Act & Assert
+    with pytest.raises(DishAlreadyInMenuError):
+        await menu_controller.add_dish_to_menu(menu_dish_links_create=menu_dish_links_create)
+
+
+@pytest.mark.asyncio
+async def test_delete_dish_from_menu_not_found_error(
+    menu_controller: MenuController, faker: Faker
+) -> None:
+    # Prepare
+    nonexistent_menu_id = faker.uuid4()
+    nonexistent_dish_id = faker.uuid4()
+
+    # Act & Assert
+    with pytest.raises(DishInMenuNotFoundError):
+        await menu_controller.delete_dish_from_menu(
+            menu_id=nonexistent_menu_id, dish_id=nonexistent_dish_id
+        )
+
+
+@pytest.mark.asyncio
+async def test_get_discounted_menus(menu_controller: MenuController, faker: Faker) -> None:
+    # Prepare
+    for _ in range(5):
+        menu_create = MenuCreate(
+            title=faker.text(max_nb_chars=12),
+            description=faker.text(max_nb_chars=24),
+            price=random.uniform(2.99, 99.99),
+            discount=random.uniform(0.01, 100),
+        )
+        await menu_controller.create_menu(menu_create)
+
+    for _ in range(3):
+        menu_create = MenuCreate(
+            title=faker.text(max_nb_chars=12),
+            description=faker.text(max_nb_chars=24),
+            price=random.uniform(2.99, 99.99),
+            discount=0,  # No discount
+        )
+        await menu_controller.create_menu(menu_create)
+
+    # Act
+    all_discounted_menus = await menu_controller.get_discounted_menus()
+
+    # Assert
+    assert len(all_discounted_menus) == 5
+    for menu in all_discounted_menus:
+        assert menu.discount > 0
