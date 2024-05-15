@@ -345,3 +345,29 @@ async def test_get_discounted_menus(menu_controller: MenuController, faker: Fake
     assert len(all_discounted_menus) == 5
     for menu in all_discounted_menus:
         assert menu.discount > 0
+
+
+@pytest.mark.asyncio
+async def test_add_dish_to_menu_with_nonexistent_menu(
+    dish_controller: DishController, menu_controller: MenuController, faker: Faker
+) -> None:
+    # Prepare
+    nonexistent_menu_id = faker.uuid4()
+
+    dish_create = DishCreate(
+        title=faker.text(max_nb_chars=12),
+        description=faker.text(max_nb_chars=24),
+        category=random.choice(list(Category)),
+        ingredients=faker.text(max_nb_chars=24),
+        price=random.uniform(0.99, 99.99),
+        halal=random.choice([True, False]),
+    )
+    created_dish = await dish_controller.create_dish(dish_create)
+
+    menu_dish_links_create = MenuDishLinksCreate(
+        dish_ids=[created_dish.id], menu_id=nonexistent_menu_id
+    )
+
+    # Act & Assert
+    with pytest.raises(MenuNotFoundError):
+        await menu_controller.add_dish_to_menu(menu_dish_links_create=menu_dish_links_create)
