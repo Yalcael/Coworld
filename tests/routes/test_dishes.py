@@ -70,3 +70,54 @@ async def test_get_dish_by_id_raise_no_result_found_error(
         "name": "DishNotFoundError",
         "status_code": 404,
     }
+
+
+@pytest.mark.asyncio
+async def test_get_dishes(
+    dish_controller: DishController, app: FastAPI, client: TestClient
+):
+    mock_dishes = [
+        Dish(
+            id=uuid.uuid4(),
+            created_at=datetime(2020, 1, 1),
+            category=Category("PLATS"),
+            title="Amazing Cow",
+            description="The Amazing Cow burger, juicy and tasty.",
+            ingredients="Meat, Salad, Tomato, Cheese",
+            price=6.99,
+            halal=False,
+        ),
+        Dish(
+            id=uuid.uuid4(),
+            created_at=datetime(2024, 2, 2),
+            category=Category("DRINKS"),
+            title="Amazing Milk",
+            description="The Amazing Cow Milk, juicy and tasty.",
+            ingredients="Milk",
+            price=2.99,
+            halal=True,
+        ),
+    ]
+
+    def _mock_get_dishes():
+        dish_controller.get_dishes = AsyncMock(return_value=mock_dishes)
+        return dish_controller
+
+    app.dependency_overrides[get_dish_controller] = _mock_get_dishes
+
+    get_dishes_response = client.get("/dishes")
+    assert get_dishes_response.status_code == 200
+    assert get_dishes_response.json() == [
+        {
+            "id": str(dish.id),
+            "created_at": dish.created_at.isoformat(),
+            "category": dish.category.name,
+            "title": dish.title,
+            "description": dish.description,
+            "ingredients": dish.ingredients,
+            "price": dish.price,
+            "halal": dish.halal,
+            "menus": [],
+        }
+        for dish in mock_dishes
+    ]
