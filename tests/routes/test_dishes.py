@@ -8,7 +8,7 @@ from starlette.testclient import TestClient
 from coworld.controllers.dishes import DishController
 from coworld.dependencies import get_dish_controller
 from coworld.models.dishes import Category
-from coworld.models.errors import DishNotFoundError
+from coworld.models.errors import DishNotFoundError, DishAlreadyExistsError
 from coworld.models.models import Dish
 
 
@@ -121,3 +121,96 @@ async def test_get_dishes(
         }
         for dish in mock_dishes
     ]
+
+
+@pytest.mark.asyncio
+async def test_create_dish(
+    dish_controller: DishController, app: FastAPI, client: TestClient
+):
+    dish_data = {
+        "category": "PLATS",
+        "title": "Amazing Cow",
+        "description": "The Amazing Cow burger, juicy and tasty.",
+        "ingredients": "Meat, Salad, Tomato, Cheese",
+        "price": 6.99,
+        "halal": False,
+    }
+
+    mock_dish = Dish(
+        id=uuid.uuid4(),
+        created_at=datetime(2020, 1, 1),
+        category=Category(dish_data["category"]),
+        **{k: v for k, v in dish_data.items() if k != "category"},
+    )
+
+    def _mock_create_dish():
+        dish_controller.create_dish = AsyncMock(return_value=mock_dish)
+        return dish_controller
+
+    app.dependency_overrides[get_dish_controller] = _mock_create_dish
+
+    create_dish_response = client.post("/dishes", json=dish_data)
+    assert create_dish_response.status_code == 201
+    assert create_dish_response.json() == {
+        "id": str(mock_dish.id),
+        "created_at": mock_dish.created_at.isoformat(),
+        "category": mock_dish.category.name,
+        "title": mock_dish.title,
+        "description": mock_dish.description,
+        "ingredients": mock_dish.ingredients,
+        "price": mock_dish.price,
+        "halal": mock_dish.halal,
+    }
+
+
+@pytest.mark.asyncio
+async def test_create_dish_raise_dish_already_exists_error(
+    dish_controller: DishController, app: FastAPI, client: TestClient
+):
+    dish_data = {
+        "category": "PLATS",
+        "title": "Amazing Cow",
+        "description": "The Amazing Cow burger, juicy and tasty.",
+        "ingredients": "Meat, Salad, Tomato, Cheese",
+        "price": 6.99,
+        "halal": False,
+    }
+
+    def _mock_create_dish():
+        dish_controller.create_dish = AsyncMock(
+            side_effect=DishAlreadyExistsError(title=dish_data["title"])
+        )
+        return dish_controller
+
+    app.dependency_overrides[get_dish_controller] = _mock_create_dish
+
+    create_dish_response = client.post("/dishes", json=dish_data)
+    assert create_dish_response.status_code == 409
+    assert create_dish_response.json() == {
+        "name": "DishAlreadyExistsError",
+        "message": f"Dish with title: {dish_data['title']} already exists",
+        "status_code": 409,
+    }
+
+
+@pytest.mark.asyncio
+async def test_create_dish_bad_category(
+    dish_controller: DishController, app: FastAPI, client: TestClient
+):
+    dish_data = {
+        "category": "PLAT",  # It should be PLATS, PLAT is invalid category.
+        "title": "Amazing Cow",
+        "description": "The Amazing Cow burger, juicy and tasty.",
+        "ingredients": "Meat, Salad, Tomato, Cheese",
+        "price": 6.99,
+        "halal": False,
+    }
+
+    def _mock_create_dish():
+        dish_controller.create_dish = AsyncMock(side_effect=ValueError)
+        return dish_controller
+
+    app.dependency_overrides[get_dish_controller] = _mock_create_dish
+
+    create_dish_response = client.post("/dishes", json=dish_data)
+    assert create_dish_response.status_code == 422
