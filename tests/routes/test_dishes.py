@@ -214,3 +214,70 @@ async def test_create_dish_bad_category(
 
     create_dish_response = client.post("/dishes", json=dish_data)
     assert create_dish_response.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_update_dish_(
+    dish_controller: DishController, app: FastAPI, client: TestClient
+):
+    _id = uuid.uuid4()
+    dish_update_data = {
+        "title": "UpdatedAmazingCow",
+        "category": "PLATS",
+        "ingredients": "Meat, Salad, Tomato, Cheese, RealSauces",
+        "description": "The Amazing Cow burger",
+        "price": 8.99,
+        "halal": False,
+    }
+
+    updated_dish = Dish(
+        id=_id,
+        created_at=datetime(2020, 1, 1),
+        category=Category(dish_update_data["category"]),
+        **{k: v for k, v in dish_update_data.items() if k != "category"},
+    )
+
+    def _mock_update_dish():
+        dish_controller.update_dish = AsyncMock(return_value=updated_dish)
+        return dish_controller
+
+    app.dependency_overrides[get_dish_controller] = _mock_update_dish
+
+    update_dish_response = client.patch(f"/dishes/{_id}", json=dish_update_data)
+    assert update_dish_response.status_code == 200
+    assert update_dish_response.json() == {
+        "id": str(_id),
+        "created_at": updated_dish.created_at.isoformat(),
+        "category": updated_dish.category.name,
+        "title": updated_dish.title,
+        "description": updated_dish.description,
+        "ingredients": updated_dish.ingredients,
+        "price": updated_dish.price,
+        "halal": updated_dish.halal,
+    }
+
+
+@pytest.mark.asyncio
+async def test_update_dish_not_found_error(
+    dish_controller: DishController, client: TestClient, app: FastAPI
+):
+    _id = uuid.uuid4()
+
+    dish_update_data = {
+        "title": "UpdatedAmazingCow",
+        "category": "PLATS",
+        "ingredients": "Meat, Salad, Tomato, Cheese, RealSauces",
+        "description": "The Amazing Cow burger",
+        "price": 8.99,
+        "halal": False,
+    }
+
+    def _mock_update_dish():
+        dish_controller.update_dish = AsyncMock(
+            side_effect=DishNotFoundError(dish_id=_id)
+        )
+        return dish_controller
+
+    app.dependency_overrides[get_dish_controller] = _mock_update_dish
+    update_dish_response = client.patch(f"/dishes/{_id}", json=dish_update_data)
+    assert update_dish_response.status_code == 404
