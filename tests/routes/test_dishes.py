@@ -349,7 +349,9 @@ async def test_get_halal_dishes(
 
     app.dependency_overrides[get_dish_controller] = _mock_get_halal_dishes
 
-    get_halal_dishes_response = client.get("/dishes/type/halal", params={"is_halal": True})
+    get_halal_dishes_response = client.get(
+        "/dishes/type/halal", params={"is_halal": True}
+    )
     assert get_halal_dishes_response.status_code == 200
     assert get_halal_dishes_response.json() == [
         {
@@ -409,7 +411,9 @@ async def test_get_dishes_by_category(
 
     app.dependency_overrides[get_dish_controller] = _mock_get_dishes_by_category
 
-    get_dishes_by_category_response = client.get("/dishes/type/category", params={"category": "PLATS"})
+    get_dishes_by_category_response = client.get(
+        "/dishes/type/category", params={"category": "PLATS"}
+    )
     assert get_dishes_by_category_response.status_code == 200
 
     response_data = get_dishes_by_category_response.json()
