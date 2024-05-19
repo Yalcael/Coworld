@@ -313,3 +313,120 @@ async def test_delete_dish_not_found_error(
     app.dependency_overrides[get_dish_controller] = _mock_delete_dish
     delete_dish_response = client.delete(f"/dishes/{_id}")
     assert delete_dish_response.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_get_halal_dishes(
+    dish_controller: DishController, app: FastAPI, client: TestClient
+):
+    # Create some mock dishes
+    mock_dishes = [
+        Dish(
+            id=uuid.uuid4(),
+            created_at=datetime(2020, 1, 1),
+            category=Category("PLATS"),
+            title="Halal Cow",
+            description="The Halal Cow burger, juicy and tasty.",
+            ingredients="Halal Meat, Salad, Tomato, Cheese",
+            price=7.99,
+            halal=True,
+        ),
+        Dish(
+            id=uuid.uuid4(),
+            created_at=datetime(2020, 1, 2),
+            category=Category("DRINKS"),
+            title="Halal Milk",
+            description="The Halal Cow Milk, creamy and tasty.",
+            ingredients="Halal Milk",
+            price=2.99,
+            halal=True,
+        ),
+    ]
+
+    def _mock_get_halal_dishes():
+        dish_controller.get_halal_dishes = AsyncMock(return_value=mock_dishes)
+        return dish_controller
+
+    app.dependency_overrides[get_dish_controller] = _mock_get_halal_dishes
+
+    get_halal_dishes_response = client.get("/dishes/type/halal", params={"is_halal": True})
+    assert get_halal_dishes_response.status_code == 200
+    assert get_halal_dishes_response.json() == [
+        {
+            "id": str(dish.id),
+            "created_at": dish.created_at.isoformat(),
+            "category": dish.category.name,
+            "title": dish.title,
+            "description": dish.description,
+            "ingredients": dish.ingredients,
+            "price": dish.price,
+            "halal": dish.halal,
+        }
+        for dish in mock_dishes
+    ]
+
+
+def assert_dishes_equal(dishes1, dishes2):
+    assert len(dishes1) == len(dishes2)
+    for d1, d2 in zip(dishes1, dishes2):
+        for key in d1:
+            if key != "menus":
+                assert d1[key] == d2[key]
+
+
+@pytest.mark.asyncio
+async def test_get_dishes_by_category(
+    dish_controller: DishController, app: FastAPI, client: TestClient
+):
+    mock_dishes = [
+        Dish(
+            id=uuid.uuid4(),
+            created_at=datetime(2020, 1, 1),
+            category=Category.PLATS,
+            title="Amazing Cow",
+            description="The Amazing Cow burger, juicy and tasty.",
+            ingredients="Meat, Salad, Tomato, Cheese",
+            price=6.99,
+            halal=False,
+            menus=[],
+        ),
+        Dish(
+            id=uuid.uuid4(),
+            created_at=datetime(2024, 2, 2),
+            category=Category.PLATS,
+            title="Delicious Steak",
+            description="The Delicious Steak, tender and flavorful.",
+            ingredients="Beef, Spices, Garlic",
+            price=15.99,
+            halal=True,
+            menus=[],
+        ),
+    ]
+
+    def _mock_get_dishes_by_category():
+        dish_controller.get_dishes_by_category = AsyncMock(return_value=mock_dishes)
+        return dish_controller
+
+    app.dependency_overrides[get_dish_controller] = _mock_get_dishes_by_category
+
+    get_dishes_by_category_response = client.get("/dishes/type/category", params={"category": "PLATS"})
+    assert get_dishes_by_category_response.status_code == 200
+
+    response_data = get_dishes_by_category_response.json()
+
+    expected_data = [
+        {
+            "id": str(dish.id),
+            "created_at": dish.created_at.isoformat(),
+            "category": dish.category.name,
+            "title": dish.title,
+            "description": dish.description,
+            "ingredients": dish.ingredients,
+            "price": dish.price,
+            "halal": dish.halal,
+            "menus": [],
+        }
+        for dish in mock_dishes
+    ]
+
+    assert_dishes_equal(response_data, expected_data)
