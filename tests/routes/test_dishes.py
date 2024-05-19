@@ -281,3 +281,35 @@ async def test_update_dish_not_found_error(
     app.dependency_overrides[get_dish_controller] = _mock_update_dish
     update_dish_response = client.patch(f"/dishes/{_id}", json=dish_update_data)
     assert update_dish_response.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_delete_dish(
+    dish_controller: DishController, app: FastAPI, client: TestClient
+):
+    _id = uuid.uuid4()
+
+    def _mock_delete_dish():
+        dish_controller.delete_dish = AsyncMock(return_value=None)
+        return dish_controller
+
+    app.dependency_overrides[get_dish_controller] = _mock_delete_dish
+    delete_dish_response = client.delete(f"/dishes/{_id}")
+    assert delete_dish_response.status_code == 204
+
+
+@pytest.mark.asyncio
+async def test_delete_dish_not_found_error(
+    app: FastAPI, client: TestClient, dish_controller: DishController
+):
+    _id = uuid.uuid4()
+
+    def _mock_delete_dish():
+        dish_controller.delete_dish = AsyncMock(
+            side_effect=DishNotFoundError(dish_id=_id)
+        )
+        return dish_controller
+
+    app.dependency_overrides[get_dish_controller] = _mock_delete_dish
+    delete_dish_response = client.delete(f"/dishes/{_id}")
+    assert delete_dish_response.status_code == 404
