@@ -232,7 +232,7 @@ async def test_add_dish_to_menu(
 
 
 @pytest.mark.asyncio
-async def test_add_dish_to_menu_already_exists_error(
+async def test_add_dish_to_menu(
     dish_controller: DishController, menu_controller: MenuController, faker: Faker
 ) -> None:
     # Prepare
@@ -254,19 +254,17 @@ async def test_add_dish_to_menu_already_exists_error(
     )
     created_dish = await dish_controller.create_dish(dish_create)
 
+    # Act
     menu_dish_links_create = MenuDishLinksCreate(
         dish_ids=[created_dish.id], menu_id=created_menu.id
     )
-
-    await menu_controller.add_dish_to_menu(
-        menu_dish_links_create=menu_dish_links_create
+    updated_menu = await menu_controller.add_dish_to_menu(
+        created_menu.id, menu_dish_links_create
     )
 
-    # Act & Assert
-    with pytest.raises(DishAlreadyInMenuError):
-        await menu_controller.add_dish_to_menu(
-            menu_dish_links_create=menu_dish_links_create
-        )
+    # Assert
+    assert created_dish.id in [dish.id for dish in updated_menu.dishes]
+    assert updated_menu.id == created_menu.id
 
 
 @pytest.mark.asyncio
@@ -293,7 +291,7 @@ async def test_add_dish_to_menu_with_nonexistent_menu(
     # Act & Assert
     with pytest.raises(MenuNotFoundError):
         await menu_controller.add_dish_to_menu(
-            menu_dish_links_create=menu_dish_links_create
+            menu_id=nonexistent_menu_id, menu_dish_links_create=menu_dish_links_create
         )
 
 
@@ -324,7 +322,7 @@ async def test_delete_dish_from_menu(
         dish_ids=[created_dish.id], menu_id=created_menu.id
     )
     await menu_controller.add_dish_to_menu(
-        menu_dish_links_create=menu_dish_links_create
+        menu_id=created_menu.id, menu_dish_links_create=menu_dish_links_create
     )
 
     # Act
