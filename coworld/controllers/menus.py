@@ -59,17 +59,13 @@ class MenuController:
             raise MenuNotFoundError(menu_id=menu_id)
 
     async def add_dish_to_menu(
-            self, menu_id: UUID, menu_dish_links_create: MenuDishLinksCreate
+        self, menu_id: UUID, menu_dish_links_create: MenuDishLinksCreate
     ) -> Menu:
         try:
-            menu = self.session.exec(
-                select(Menu).where(Menu.id == menu_id)
-            ).one()
+            menu = self.session.exec(select(Menu).where(Menu.id == menu_id)).one()
             for dish_id in menu_dish_links_create.dish_ids:
                 dish = self.session.exec(select(Dish).where(Dish.id == dish_id)).one()
-                menu_dish_links = MenuDishLinks(
-                    dish_id=dish_id, menu_id=menu_id
-                )
+                menu_dish_links = MenuDishLinks(dish_id=dish_id, menu_id=menu_id)
                 self.session.add(menu_dish_links)
             self.session.commit()
             self.session.refresh(menu)
@@ -78,9 +74,7 @@ class MenuController:
             raise MenuNotFoundError(menu_id=menu_id)
         except IntegrityError:
             self.session.rollback()
-            raise DishAlreadyInMenuError(
-                dish=dish.title, menu_id=menu_id
-            )
+            raise DishAlreadyInMenuError(dish=dish.title, menu_id=menu_id)
 
     async def delete_dish_from_menu(self, menu_id: UUID, dish_id: UUID) -> None:
         try:

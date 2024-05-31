@@ -15,7 +15,7 @@ from coworld.models.reservations import Reservation, ReservationCategory
 
 @pytest.mark.asyncio
 async def test_get_reservation_by_id(
-        reservation_controller: ReservationController, app: FastAPI, client: TestClient
+    reservation_controller: ReservationController, app: FastAPI, client: TestClient
 ):
     _id = uuid.uuid4()
 
@@ -30,7 +30,7 @@ async def test_get_reservation_by_id(
                 amount_of_people=6,
                 email_address="vvvvv@admin.com",
                 reservation_time=datetime(2020, 3, 3, 20, 30, 0),
-                phone_number=PhoneNumber("+33633445566")
+                phone_number=PhoneNumber("+33633445566"),
             ),
         )
         return reservation_controller
@@ -48,13 +48,13 @@ async def test_get_reservation_by_id(
         "amount_of_people": 6,
         "email_address": "vvvvv@admin.com",
         "reservation_time": "2020-03-03T20:30:00",
-        "phone_number": "+33633445566"
+        "phone_number": "+33633445566",
     }
 
 
 @pytest.mark.asyncio
 async def test_get_reservation_by_id_raise_no_result_found_error(
-        reservation_controller: ReservationController, app: FastAPI, client: TestClient
+    reservation_controller: ReservationController, app: FastAPI, client: TestClient
 ):
     _id = uuid.uuid4()
 
@@ -77,7 +77,7 @@ async def test_get_reservation_by_id_raise_no_result_found_error(
 
 @pytest.mark.asyncio
 async def test_get_reservations(
-        reservation_controller: ReservationController, app: FastAPI, client: TestClient
+    reservation_controller: ReservationController, app: FastAPI, client: TestClient
 ):
     mock_reservations = [
         Reservation(
@@ -89,7 +89,7 @@ async def test_get_reservations(
             amount_of_people=6,
             email_address="eeeee@admin.com",
             reservation_time=datetime(2020, 3, 3, 21, 30, 0),
-            phone_number=PhoneNumber("+33633445566")
+            phone_number=PhoneNumber("+33633445566"),
         ),
         Reservation(
             id=uuid.uuid4(),
@@ -100,12 +100,14 @@ async def test_get_reservations(
             amount_of_people=6,
             email_address="bbbbb@admin.com",
             reservation_time=datetime(2022, 2, 2, 22, 30, 0),
-            phone_number=PhoneNumber("+336445566677")
+            phone_number=PhoneNumber("+336445566677"),
         ),
     ]
 
     def _mock_get_reservations():
-        reservation_controller.get_reservations = AsyncMock(return_value=mock_reservations)
+        reservation_controller.get_reservations = AsyncMock(
+            return_value=mock_reservations
+        )
         return reservation_controller
 
     app.dependency_overrides[get_reservation_controller] = _mock_get_reservations
@@ -122,7 +124,7 @@ async def test_get_reservations(
             "amount_of_people": reservation.amount_of_people,
             "email_address": reservation.email_address,
             "reservation_time": reservation.reservation_time.isoformat(),
-            "phone_number": str(reservation.phone_number)
+            "phone_number": str(reservation.phone_number),
         }
         for reservation in mock_reservations
     ]
@@ -130,7 +132,7 @@ async def test_get_reservations(
 
 @pytest.mark.asyncio
 async def test_create_reservation(
-        reservation_controller: ReservationController, app: FastAPI, client: TestClient
+    reservation_controller: ReservationController, app: FastAPI, client: TestClient
 ):
     reservation_data = {
         "reservation_category": "SIMPLE",
@@ -139,19 +141,27 @@ async def test_create_reservation(
         "amount_of_people": 6,
         "email_address": "vvvvv@admin.com",
         "reservation_time": "2020-03-03T20:30:00",
-        "phone_number": "+33633445566"
+        "phone_number": "+33633445566",
     }
 
     mock_reservation = Reservation(
         id=uuid.uuid4(),
         created_at=datetime(2020, 1, 1),
-        reservation_category=ReservationCategory(reservation_data["reservation_category"]),
+        reservation_category=ReservationCategory(
+            reservation_data["reservation_category"]
+        ),
         reservation_time=datetime.fromisoformat(reservation_data["reservation_time"]),
-        **{k: v for k, v in reservation_data.items() if k not in ["reservation_category", "reservation_time"]},
+        **{
+            k: v
+            for k, v in reservation_data.items()
+            if k not in ["reservation_category", "reservation_time"]
+        },
     )
 
     def _mock_create_reservation():
-        reservation_controller.create_reservation = AsyncMock(return_value=mock_reservation)
+        reservation_controller.create_reservation = AsyncMock(
+            return_value=mock_reservation
+        )
         return reservation_controller
 
     app.dependency_overrides[get_reservation_controller] = _mock_create_reservation
@@ -167,7 +177,7 @@ async def test_create_reservation(
         "amount_of_people": mock_reservation.amount_of_people,
         "email_address": mock_reservation.email_address,
         "reservation_time": mock_reservation.reservation_time.isoformat(),
-        "phone_number": str(mock_reservation.phone_number)
+        "phone_number": str(mock_reservation.phone_number),
     }
 
 
@@ -183,24 +193,36 @@ async def test_update_reservation(
         "amount_of_people": 6,
         "email_address": "vvvvv@admin.com",
         "reservation_time": "2020-03-03T20:30:00",
-        "phone_number": "+33633445566"
+        "phone_number": "+33633445566",
     }
 
     updated_reservation = Reservation(
         id=_id,
         created_at=datetime(2020, 1, 1),
-        reservation_category=ReservationCategory(reservation_update_data["reservation_category"]),
-        reservation_time=datetime.fromisoformat(reservation_update_data["reservation_time"]),
-        **{k: v for k, v in reservation_update_data.items() if k not in ["reservation_category", "reservation_time"]},
+        reservation_category=ReservationCategory(
+            reservation_update_data["reservation_category"]
+        ),
+        reservation_time=datetime.fromisoformat(
+            reservation_update_data["reservation_time"]
+        ),
+        **{
+            k: v
+            for k, v in reservation_update_data.items()
+            if k not in ["reservation_category", "reservation_time"]
+        },
     )
 
     def _mock_update_reservation():
-        reservation_controller.update_reservation = AsyncMock(return_value=updated_reservation)
+        reservation_controller.update_reservation = AsyncMock(
+            return_value=updated_reservation
+        )
         return reservation_controller
 
     app.dependency_overrides[get_reservation_controller] = _mock_update_reservation
 
-    update_reservation_response = client.patch(f"/reservations/{_id}", json=reservation_update_data)
+    update_reservation_response = client.patch(
+        f"/reservations/{_id}", json=reservation_update_data
+    )
     assert update_reservation_response.status_code == 200
     assert update_reservation_response.json() == {
         "id": str(_id),
@@ -211,7 +233,7 @@ async def test_update_reservation(
         "amount_of_people": updated_reservation.amount_of_people,
         "email_address": updated_reservation.email_address,
         "reservation_time": updated_reservation.reservation_time.isoformat(),
-        "phone_number": str(updated_reservation.phone_number)
+        "phone_number": str(updated_reservation.phone_number),
     }
 
 
@@ -228,7 +250,7 @@ async def test_update_reservation_not_found_error(
         "amount_of_people": 6,
         "email_address": "vvvvv@admin.com",
         "reservation_time": "2020-03-03T20:30:00",
-        "phone_number": "+33633445566"
+        "phone_number": "+33633445566",
     }
 
     def _mock_update_reservation():
@@ -238,7 +260,9 @@ async def test_update_reservation_not_found_error(
         return reservation_controller
 
     app.dependency_overrides[get_reservation_controller] = _mock_update_reservation
-    update_reservation_response = client.patch(f"/reservations/{_id}", json=reservation_update_data)
+    update_reservation_response = client.patch(
+        f"/reservations/{_id}", json=reservation_update_data
+    )
     assert update_reservation_response.status_code == 404
 
 

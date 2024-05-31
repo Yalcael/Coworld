@@ -5,9 +5,7 @@ from coworld.models.menus import MenuBase
 
 
 @pytest.mark.asyncio
-async def test_create_menu_base_when_discount_is_0(
-    faker: Faker
-) -> None:
+async def test_create_menu_base_when_discount_is_0(faker: Faker) -> None:
     # Prepare / Act
     menu_base = MenuBase(
         title=faker.text(max_nb_chars=12),
@@ -21,9 +19,7 @@ async def test_create_menu_base_when_discount_is_0(
 
 
 @pytest.mark.asyncio
-async def test_create_menu_base_when_discount_is_superior_than_0(
-    faker: Faker
-) -> None:
+async def test_create_menu_base_when_discount_is_superior_than_0(faker: Faker) -> None:
     # Prepare / Act
     menu_base = MenuBase(
         title=faker.text(max_nb_chars=12),
