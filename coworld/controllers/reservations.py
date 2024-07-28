@@ -30,7 +30,7 @@ class ReservationController:
     async def create_reservation(
         self, reservation_create: ReservationCreate
     ) -> Reservation:
-        new_reservation = Reservation(**reservation_create.dict())
+        new_reservation = Reservation(**reservation_create.model_dump())
         self.session.add(new_reservation)
         self.session.commit()
         self.session.refresh(new_reservation)

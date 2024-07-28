@@ -24,7 +24,7 @@ class MenuController:
 
     async def create_menu(self, menu_create: MenuCreate) -> Menu:
         try:
-            new_menu = Menu(**menu_create.dict())
+            new_menu = Menu(**menu_create.model_dump())
             self.session.add(new_menu)
             self.session.commit()
             self.session.refresh(new_menu)

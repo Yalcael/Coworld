@@ -22,7 +22,7 @@ class DishController:
 
     async def create_dish(self, dish_create: DishCreate) -> Dish:
         try:
-            new_dish = Dish(**dish_create.dict())
+            new_dish = Dish(**dish_create.model_dump())
             self.session.add(new_dish)
             self.session.commit()
             self.session.refresh(new_dish)
