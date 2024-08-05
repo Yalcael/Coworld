@@ -1,6 +1,5 @@
 from typing import Sequence
 from uuid import UUID
-
 from sqlalchemy.exc import NoResultFound
 from sqlmodel import Session, select
 

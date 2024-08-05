@@ -3,6 +3,7 @@ from coworld.models.dishes import DishCreate, DishUpdate, Category
 from coworld.models.models import Dish
 from coworld.models.errors import DishNotFoundError, DishAlreadyExistsError
 from uuid import UUID
+
 from sqlalchemy.exc import IntegrityError, NoResultFound
 from sqlmodel import Session, select
 

@@ -1,5 +1,4 @@
 from typing import Sequence
-
 from coworld.models.menus import MenuCreate, MenuUpdate
 from coworld.models.models import Menu, Dish
 from coworld.models.errors import (
