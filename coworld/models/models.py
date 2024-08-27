@@ -1,8 +1,6 @@
 from datetime import datetime
 from uuid import UUID, uuid4
-
 from sqlmodel import Field, Relationship
-
 from coworld.models.dishes import DishBase
 from coworld.models.menus import MenuBase
 from coworld.models.menus_dishes_links import MenuDishLinks
